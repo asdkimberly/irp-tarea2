@@ -3,7 +3,10 @@
 function res=loss(theta,X,Y)
   order=length(theta)-1;
 
-  ## ################################################################
+  ## Calculando el residuo
+  
+  ## Sumando los residuos
+  
   ## Your code in here!!!
 
   res = zeros(length(theta),1); ## Dummy result  
