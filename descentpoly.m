@@ -50,25 +50,28 @@
 % Introducción al Reconocimiento de Patrones Escuela de Ingeniería
 % Electrónica Tecnológico de Costa Rica
 %
-% (C) 2021 Andr�s Jim�nez Jim�nez y Kimberly  Orozco Retana  Tarea 2, I Semestre 2021 EL5852
-% Introducción al Reconocimiento de Patrones Escuela de Ingeniería
-% Electrónica Tecnológico de Costa Rica
+% (C) 2021 Andr�s Jim�nez Jim�nez y Kimberly  Orozco Retana  
+% Tarea 2, I Semestre 2021 
+% EL5852 Introducción al Reconocimiento de Patrones 
+% Escuela de Ingeniería Electrónica Tecnológico de Costa Rica
 
-%utilizando c�digo del curso con modificaciones propias
-%Sean autores= Andr�s Jim�nez Jim�nez y Kimberly Orozco Retana
+% Utilizando c�digo del curso con modificaciones propias
+% Sean autores= Andr�s Jim�nez Jim�nez y Kimberly Orozco Retana
 
 
 pkg load optim;
 
-## Data stored each sample in a row, where the last row is the label
-D=load("escazu40.dat");
+## Carga los datos
+  D=load("escazu40.dat");
 
-## Construir la matriz de pre dise�o, o sea las columans con las 3 entradas: areas, pisos y cuartos; autores
+## Construir la matriz de pre dise�o, o sea las columans con las 3 entradas: areas, pisos y cuartos; autores
 %Xo=[D(:,1),D(:,2),D(:,3)]; %para 3D
-Xo=[D(:,1)]; %solo las areas
 
-## The outputs vector with the original data (Etiqutas)
-Yo=D(:,4);
+## Construye la matriz de prediseno para las areas
+  Xo=[D(:,1)]; %Solo areas
+
+## Construye el vector de etiquetas
+  Yo=D(:,4);
 
 
 
@@ -77,20 +80,45 @@ Yo=D(:,4);
 
 function [thetas,errors]=descentpoly(tf,gtf,theta0,Xo,Yo,lr,varargin)
 
-  %% Parse all given parameters
+## Define el orden de la regresion polinomial
   order = length(theta0)-1;
   
-  
-  ## normalizer_type="normal";
+## Define el tipo de normalizador
   normalizer_type="normal";
 
-## Normalize the data
+## Normaliza los datos de la matriz de prediseño
   nx = normalizer(normalizer_type);  
   x = nx.fit_transform(Xo);
 
+## Se asegura de tener los datos en la forma correcta
+
+  # theta0 must be a row vector
+  if (isvector(theta0))
+    theta0=theta0(:).';
+  else
+    error("theta0 must be a row vector");
+  endif
+    
+  # Xo must be a column vector
+  if (isvector(Xo))
+    Xo=Xo(:);
+  else
+   error("Xo must be a column vector");
+  endif
+
+  ## Yo must be a column vector
+  if (isvector(Yo))
+    Yo=Yo(:);
+  else
+    error("Yo must be a column vector");
+  endif
+  
+  
   if (order<1)
     error("El punto inicial de theta0 debe tener al menos 2 dimensiones");
-  %%Creamos las matrices de dise�o completas; autores
+  
+## Creamos las matrices de diseño completas; autores
+  
   %para orden 1
   elseif (order=1)
     XX=[ones(rows(x),1) x];
@@ -111,32 +139,12 @@ function [thetas,errors]=descentpoly(tf,gtf,theta0,Xo,Yo,lr,varargin)
     XX=[ones(rows(x),1) x x.^2 x.^3 x.^4];
     
   elseif (order>5)
-    error("El l�mite de orden es de 4");
+    error("El l�mite de orden es de 4");
   endif
 
-  ## theta0 must be a row vector
-  if (isvector(theta0))
-    theta0=theta0(:).';
-  else
-    error("theta0 must be a row vector");
-  endif
-    
-  ## Xo must be a column vector No aplica para 3D
-%  if (isvector(Xo))
-%    Xo=Xo(:);
-%  else
-%   error("Xo must be a column vector");
-%  endif
-
-  ## Yo must be a column vector
-  if (isvector(Yo))
-    Yo=Yo(:);
-  else
-    error("Yo must be a column vector");
-  endif
   
-  J = tf(theta,Xo,Yo)
-  gradJ=gradloss(XX,theta0);
+  tf = loss(theta,Xo,Yo);
+  gtf = gradloss(XX,theta0);
   
   defaultMethod="batch";
   defaultBeta=0.7;
