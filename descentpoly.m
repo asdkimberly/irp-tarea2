@@ -50,22 +50,29 @@
 % Introducci贸n al Reconocimiento de Patrones Escuela de Ingenier铆a
 % Electr贸nica Tecnol贸gico de Costa Rica
 %
-% (C) 2021 <Su Copyright AQU脥>
+% (C) 2021 Andr閟 Jim閚ez Jim閚ez y Kimberly  Orozco Retana  Tarea 2, I Semestre 2021 EL5852
+% Introducci贸n al Reconocimiento de Patrones Escuela de Ingenier铆a
+% Electr贸nica Tecnol贸gico de Costa Rica
 
+%utilizando c骴igo del curso con modificaciones propias
+%Sean autores= Andr閟 Jim閚ez Jim閚ez y Kimberly Orozco Retana
 
 
 pkg load optim;
 
 ## Data stored each sample in a row, where the last row is the label
-D=load("escazu.dat");
+D=load("escazu40.dat");
 
-## Construct la matriz de pre dise駉, o sea las columans con las 3 entradas: areas, pisos y cuartos
-Xo=[D(:,1),D(:,2),D(:,3)];
+## Construir la matriz de pre dise駉, o sea las columans con las 3 entradas: areas, pisos y cuartos; autores
+%Xo=[D(:,1),D(:,2),D(:,3)]; %para 3D
+Xo=[D(:,1)]; %solo las areas
 
 ## The outputs vector with the original data (Etiqutas)
 Yo=D(:,4);
 
-[thetas,errors]=descentpoly(@J,@gradJ,[0 0 0.5],X,Y,0.1,"method","adam","maxIter",10)
+
+
+[thetas,errors]=descentpoly(@J,@gradJ,[0 0 0.5],Xo,Yo,0.1,"method","adam","maxiter",10)
 
 
 function [thetas,errors]=descentpoly(tf,gtf,theta0,Xo,Yo,lr,varargin)
@@ -83,23 +90,26 @@ function [thetas,errors]=descentpoly(tf,gtf,theta0,Xo,Yo,lr,varargin)
 
   if (order<1)
     error("El punto inicial de theta0 debe tener al menos 2 dimensiones");
-  %%Creamos las matrices de dise駉 completas
+  %%Creamos las matrices de dise駉 completas; autores
   %para orden 1
-  if (order=1)
+  elseif (order=1)
     XX=[ones(rows(x),1) x];
-    y=XX*theta;
+    
   %para orden 2  
   elseif (order=2)
-    XX=[ones(rows(x),1) x x.^2 x(:,1).*x(:,2) x(:,1).*x(:,3) x(:,2).*x(:,3)];
-    y=XX*theta;
+    %XX=[ones(rows(x),1) x x.^2 x(:,1).*x(:,2) x(:,1).*x(:,3) x(:,2).*x(:,3)]; %Para 3D
+    XX=[ones(rows(x),1) x x.^2];
+    
   %para orden 3  
   elseif (order=3)
-    XX=[ones(rows(x),1) x x.^2 x(:,1).*x(:,2) x(:,1).*x(:,3) x(:,2).*x(:,3) x.^3 (x(:,1).^2).*x(:,2) (x(:,1).^2).*x(:,3) x(:,1).*(x(:,2).^2) x(:,1).*(x(:,3).^2) (x(:,2).^2).*x(:,3) x(:,2).*(x(:,3).^2) x(:,1).*x(:,2).*x(:,3)];
-    y=XX*theta;
+    %XX=[ones(rows(x),1) x x.^2 x(:,1).*x(:,2) x(:,1).*x(:,3) x(:,2).*x(:,3) x.^3 (x(:,1).^2).*x(:,2) (x(:,1).^2).*x(:,3) x(:,1).*(x(:,2).^2) x(:,1).*(x(:,3).^2) (x(:,2).^2).*x(:,3) x(:,2).*(x(:,3).^2) x(:,1).*x(:,2).*x(:,3)];
+    XX=[ones(rows(x),1) x x.^2 x.^3];
+    
   %para orden 4  
   elseif (order=4)
-    XX=[ones(rows(x),1) x x.^2 x(:,1).*x(:,2) x(:,1).*x(:,3) x(:,2).*x(:,3) x.^3 (x(:,1).^2).*x(:,2) (x(:,1).^2).*x(:,3) x(:,1).*(x(:,2).^2) x(:,1).*(x(:,3).^2) (x(:,2).^2).*x(:,3) x(:,2).*(x(:,3).^2) x(:,1).*x(:,2).*x(:,3) x.^4 (x(:,1).^3).*x(:,2) (x(:,1).^3).*x(:,3) x(:,1).*(x(:,2).^3) x(:,1).*(x(:,3).^3) (x(:,2).^3).*x(:,3) x(:,2).*(x(:,3).^3) (x(:,1).^2).*(x(:,2).^2) (x(:,1).^2).*(x(:,3).^2) (x(:,2).^2).*(x(:,3).^2) (x(:,1).^2).*x(:,2).*x(:,3) x(:,1).*(x(:,2).^2).*x(:,3) x(:,1).*x(:,2).*(x(:,3).^2)];
-    y=XX*theta;
+    %XX=[ones(rows(x),1) x x.^2 x(:,1).*x(:,2) x(:,1).*x(:,3) x(:,2).*x(:,3) x.^3 (x(:,1).^2).*x(:,2) (x(:,1).^2).*x(:,3) x(:,1).*(x(:,2).^2) x(:,1).*(x(:,3).^2) (x(:,2).^2).*x(:,3) x(:,2).*(x(:,3).^2) x(:,1).*x(:,2).*x(:,3) x.^4 (x(:,1).^3).*x(:,2) (x(:,1).^3).*x(:,3) x(:,1).*(x(:,2).^3) x(:,1).*(x(:,3).^3) (x(:,2).^3).*x(:,3) x(:,2).*(x(:,3).^3) (x(:,1).^2).*(x(:,2).^2) (x(:,1).^2).*(x(:,3).^2) (x(:,2).^2).*(x(:,3).^2) (x(:,1).^2).*x(:,2).*x(:,3) x(:,1).*(x(:,2).^2).*x(:,3) x(:,1).*x(:,2).*(x(:,3).^2)];
+    XX=[ones(rows(x),1) x x.^2 x.^3 x.^4];
+    
   elseif (order>5)
     error("El l韒ite de orden es de 4");
   endif
@@ -124,6 +134,9 @@ function [thetas,errors]=descentpoly(tf,gtf,theta0,Xo,Yo,lr,varargin)
   else
     error("Yo must be a column vector");
   endif
+  
+  J = tf(theta,Xo,Yo)
+  gradJ=gradloss(XX,theta0);
   
   defaultMethod="batch";
   defaultBeta=0.7;
@@ -164,8 +177,12 @@ function [thetas,errors]=descentpoly(tf,gtf,theta0,Xo,Yo,lr,varargin)
   epsilon = p.Results.epsilon;     ## convergence error tolerance
   minibatch = p.Results.minibatch; ## minibatch size
   
+  
+  
+  
+  
   thetas = [theta0];
   errors = [tf(theta0,Xo,Yo)];
   
-endfunction
+endfunction;
 
