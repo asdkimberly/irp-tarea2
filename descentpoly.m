@@ -53,15 +53,55 @@
 % (C) 2021 <Su Copyright AQUÃ>
 
 
+
+pkg load optim;
+
+## Data stored each sample in a row, where the last row is the label
+D=load("escazu.dat");
+
+## Construct la matriz de pre diseño, o sea las columans con las 3 entradas: areas, pisos y cuartos
+Xo=[D(:,1),D(:,2),D(:,3)];
+
+## The outputs vector with the original data (Etiqutas)
+Yo=D(:,4);
+
+[thetas,errors]=descentpoly(@J,@gradJ,[0 0 0.5],X,Y,0.1,"method","adam","maxIter",10)
+
+
 function [thetas,errors]=descentpoly(tf,gtf,theta0,Xo,Yo,lr,varargin)
 
   %% Parse all given parameters
   order = length(theta0)-1;
+  
+  
+  ## normalizer_type="normal";
+  normalizer_type="normal";
+
+## Normalize the data
+  nx = normalizer(normalizer_type);  
+  x = nx.fit_transform(Xo);
 
   if (order<1)
-    error("Initial point theta0 must have at least 2 dimensions");
-  elseif (order>20)
-    error("Currently order limit set to 20");
+    error("El punto inicial de theta0 debe tener al menos 2 dimensiones");
+  %%Creamos las matrices de diseño completas
+  %para orden 1
+  if (order=1)
+    XX=[ones(rows(x),1) x];
+    y=XX*theta;
+  %para orden 2  
+  elseif (order=2)
+    XX=[ones(rows(x),1) x x.^2 x(:,1).*x(:,2) x(:,1).*x(:,3) x(:,2).*x(:,3)];
+    y=XX*theta;
+  %para orden 3  
+  elseif (order=3)
+    XX=[ones(rows(x),1) x x.^2 x(:,1).*x(:,2) x(:,1).*x(:,3) x(:,2).*x(:,3) x.^3 (x(:,1).^2).*x(:,2) (x(:,1).^2).*x(:,3) x(:,1).*(x(:,2).^2) x(:,1).*(x(:,3).^2) (x(:,2).^2).*x(:,3) x(:,2).*(x(:,3).^2) x(:,1).*x(:,2).*x(:,3)];
+    y=XX*theta;
+  %para orden 4  
+  elseif (order=4)
+    XX=[ones(rows(x),1) x x.^2 x(:,1).*x(:,2) x(:,1).*x(:,3) x(:,2).*x(:,3) x.^3 (x(:,1).^2).*x(:,2) (x(:,1).^2).*x(:,3) x(:,1).*(x(:,2).^2) x(:,1).*(x(:,3).^2) (x(:,2).^2).*x(:,3) x(:,2).*(x(:,3).^2) x(:,1).*x(:,2).*x(:,3) x.^4 (x(:,1).^3).*x(:,2) (x(:,1).^3).*x(:,3) x(:,1).*(x(:,2).^3) x(:,1).*(x(:,3).^3) (x(:,2).^3).*x(:,3) x(:,2).*(x(:,3).^3) (x(:,1).^2).*(x(:,2).^2) (x(:,1).^2).*(x(:,3).^2) (x(:,2).^2).*(x(:,3).^2) (x(:,1).^2).*x(:,2).*x(:,3) x(:,1).*(x(:,2).^2).*x(:,3) x(:,1).*x(:,2).*(x(:,3).^2)];
+    y=XX*theta;
+  elseif (order>5)
+    error("El límite de orden es de 4");
   endif
 
   ## theta0 must be a row vector
@@ -71,12 +111,12 @@ function [thetas,errors]=descentpoly(tf,gtf,theta0,Xo,Yo,lr,varargin)
     error("theta0 must be a row vector");
   endif
     
-  ## Xo must be a column vector
-  if (isvector(Xo))
-    Xo=Xo(:);
-  else
-    error("Xo must be a column vector");
-  endif
+  ## Xo must be a column vector No aplica para 3D
+%  if (isvector(Xo))
+%    Xo=Xo(:);
+%  else
+%   error("Xo must be a column vector");
+%  endif
 
   ## Yo must be a column vector
   if (isvector(Yo))
